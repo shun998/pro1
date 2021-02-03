@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 
+	namespace：必须与对应的接口全类名一致
+	id:必须与对应接口的某个对应的方法名一致
+	
+ -->
+<mapper namespace="com.zs.mapper.AddressMapper">
+	<select id="getAddrByUserId" resultType="Address">
+		select addr_id addrId,addr_province addrProvince,addr_city addrCity,addr_area addrArea,addr_content addrContent,
+		addr_receiver addrReceiver,addr_tel addrTel,addr_isdefault addrIsdefault from t_address
+		where user_id=#{loginUserId}
+	</select>
+	<insert id="addAddress" parameterType="Address">
+	    <!-- mysql插入数据后，获取id，将新插入记录的id值 放入User对象id属性中-->
+        <selectKey keyProperty="addrId" resultType="int" order="AFTER" >
+        	select last_insert_id()  as addrId
+        </selectKey> 
+	    insert into t_address values(null,#{userId},#{addrProvince},#{addrCity},#{addrArea},#{addrContent},
+	    #{addrReceiver},#{addrTel},0)
+	</insert>
+	<update id="updateAddress" parameterType="Address">
+	    update t_address set addr_province=#{addrProvince},addr_city=#{addrCity},addr_area=#{addrArea},
+	    addr_content=#{addrContent},addr_receiver=#{addrReceiver},addr_tel=#{addrTel} 
+	    where addr_id=#{addrId}
+	</update>
+	<delete id="deleteAddress" parameterType="int">
+	    delete from t_address where addr_id=#{addrId}
+	</delete>
+	<update id="unsetDefaultAddress">
+	    update t_address set addr_isdefault=0 where addr_isdefault=1 and user_id=#{loginUserId}
+	</update>
+	<update id="setDefaultAddress" parameterType="int">
+	    update t_address set addr_isdefault=1 where addr_id=#{addrId}
+	</update>
+	<select id="getAddressById" parameterType="int" resultType="Address">
+	    select addr_id addrId,addr_province addrProvince,addr_city addrCity,addr_area addrArea,addr_content addrContent,
+		addr_receiver addrReceiver,addr_tel addrTel,addr_isdefault addrIsdefault from t_address
+		where addr_id=#{addrId}
+	</select>
+</mapper>

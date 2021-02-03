@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 
+	namespace：必须与对应的接口全类名一致
+	id:必须与对应接口的某个对应的方法名一致
+	
+ -->
+<mapper namespace="com.zs.mapper.UserMapper">
+	
+	<select id="existsUser" parameterType="User" resultType="User">
+		select user_id userId,user_name userName,user_rank userRank from t_user where user_name=#{userName} and user_pass=#{userPass}
+	</select>
+	
+	<select id="existsUserName" parameterType="User" resultType="int">
+		select count(*) from t_user where user_name=#{userName}
+	</select>
+	 
+	<insert id="addUser" parameterType="User">
+	    <!-- mysql插入数据后，获取id，将新插入记录的id值 放入User对象id属性中-->
+        <selectKey keyProperty="id" resultType="int" order="AFTER" >
+        	select last_insert_id()  as userId
+        </selectKey>
+	    insert into t_user(user_id,user_name,user_pass,user_sex,user_email,user_rank) 
+		values(null,#{userName},#{userPass},#{userSex},#{userEmail},0)
+	</insert>
+
+	
+	<select id="getPersonalInfo" resultType="User">
+	    select user_id userId,user_name userName,user_sex userSex, user_pass userPass,user_email userEmail from t_user where user_id=#{loginUserId}
+	</select>
+	<update id="updatePersonalInfo">
+	    update t_user set user_sex=#{userSex},user_email=#{userEmail} where user_id=#{userId}
+	</update>
+	
+	
+	<update id="updatePersonalPassword">
+	    update t_user set user_pass=#{userPass} where user_id=#{userId}
+	</update>
+	
+		
+	<select id="existsAdmin" parameterType="User" resultType="User">
+		select user_id userId,user_name userName,user_rank userRank from t_user where user_name=#{userName} and user_pass=#{userPass} and user_rank=1
+	</select>
+	
+	<select id="getAdminUsers" resultType="User">
+	    select user_id userId,user_name userName,user_sex userSex, user_pass userPass,user_email userEmail from t_user 
+	    <where>	    		    
+			  <if test="params.userName!=null ">
+		        and user_name like CONCAT('%', #{params.userName}, '%') 
+		      </if>
+			  <if test="params.userSex!=null and params.userSex!=''">
+			    and user_sex=#{params.userSex} 
+			  </if>
+			
+	    </where>
+		<if test="params.sort!=null">
+			<choose>
+			  <when test="params.sort ==1">
+			    order by user_id
+			  </when>
+			  <when test="params.sort ==2">
+			    order by user_id desc
+			  </when>
+			  <when test="params.sort ==3">
+			    order by user_name 
+			  </when>
+			  <when test="params.sort ==4">
+			    order by user_name desc
+			  </when>
+			  <otherwise>
+			    order by user_id 
+			  </otherwise>
+			</choose>
+		</if>
+		<if test="params.sort==null">
+		     order by  user_id 
+		</if>
+	</select>
+	<delete id="deleteUser">
+	    delete from t_user where user_id=#{userId}
+	</delete>
+	<delete id="deleteUsersByIds">
+	    delete from t_user where user_id in 
+	    <foreach collection="array" item="item" index="index"
+             open="(" close=")" separator=",">
+             #{item}
+        </foreach>
+	</delete>
+</mapper>
